@@ -202,7 +202,25 @@ export class SeverityBarCard extends LitElement {
   }
 
   private _getGradient(): string {
-    return 'rgba(128, 128, 128, 0.3)';
+    const severity = this._config.severity;
+    if (!severity || !Array.isArray(severity) || severity.length === 0) {
+      return 'rgba(128, 128, 128, 0.3)';
+    }
+
+    const min = this._config.min ?? 0;
+    const max = this._config.max ?? 100;
+    const range = max - min;
+
+    const stops: string[] = [];
+
+    for (const s of severity) {
+      const fromPct = ((s.from - min) / range) * 100;
+      const toPct = ((s.to - min) / range) * 100;
+      stops.push(`${s.color} ${fromPct.toFixed(1)}%`);
+      stops.push(`${s.color} ${toPct.toFixed(1)}%`);
+    }
+
+    return `linear-gradient(to right, ${stops.join(', ')})`;
   }
 
   private _getMatchingSeverity(value: number): { color: string; from: number; to: number } | undefined {
