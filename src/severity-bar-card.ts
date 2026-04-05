@@ -116,7 +116,7 @@ export class SeverityBarCard extends LitElement {
       display: block;
     }
     ha-card {
-      padding: 10px 12px;
+      padding: 8px 10px;
       cursor: pointer;
       transition: background-color 0.15s ease;
     }
@@ -156,12 +156,12 @@ export class SeverityBarCard extends LitElement {
     .value-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
     }
     .value {
       font-family: Roboto, Noto, sans-serif;
       font-size: 12px;
-      font-weight: 400;
+      font-weight: 700;
       letter-spacing: 0.4px;
       line-height: 14px;
       flex-shrink: 0;
