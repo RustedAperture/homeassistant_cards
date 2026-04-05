@@ -1,10 +1,17 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 
 @customElement('severity-bar-card')
 export class SeverityBarCard extends LitElement {
-  @property({ attribute: false }) public hass!: any;
-  @property({ attribute: false }) private _config: any = {};
+  public hass!: any;
+  private _config: any = {};
+
+  static get properties() {
+    return {
+      hass: { type: Object },
+      _config: { type: Object },
+    };
+  }
 
   static getStubConfig() {
     return {
