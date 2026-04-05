@@ -27,6 +27,28 @@ export class SeverityBarCard extends LitElement {
     };
   }
 
+  static getConfigForm() {
+    return {
+      schema: [
+        { name: 'entity', required: true, selector: { entity: {} } },
+        {
+          type: 'grid',
+          name: '',
+          schema: [
+            { name: 'name', selector: { text: {} } },
+            {
+              name: 'icon',
+              selector: { icon: {} },
+              context: { icon_entity: 'entity' },
+            },
+            { name: 'min', selector: { number: { mode: 'box' } } },
+            { name: 'max', selector: { number: { mode: 'box' } } },
+          ],
+        },
+      ],
+    };
+  }
+
   setConfig(config: any) {
     if (!config.entity) {
       throw new Error('You need to define an entity');
@@ -35,7 +57,7 @@ export class SeverityBarCard extends LitElement {
   }
 
   getCardSize() {
-    return 2;
+    return 1;
   }
 
   getGridOptions() {
@@ -57,30 +79,28 @@ export class SeverityBarCard extends LitElement {
 
     const name = this._config.name || stateObj?.attributes?.friendly_name || this._config.entity;
     const icon = this._config.icon || 'mdi:chart-line';
+    const severityColor = this._getSeverityColor(state);
+    const severityBg = this._getSeverityBgColor(state);
 
     return html`
-      <ha-card
-        class="card"
-        @mouseenter="${this._handleHover}"
-        @mouseleave="${this._handleHoverEnd}"
-      >
+      <ha-card class="card">
         <div class="content">
-          <div class="icon" style="background-color: ${this._getSeverityBgColor(state)}; color: ${this._getSeverityColor(state)};">
+          <div class="icon" style="background-color: ${severityBg}; color: ${severityColor};">
             <ha-icon .icon="${icon}"></ha-icon>
           </div>
           <div class="right">
             <div class="name">${name}</div>
             <div class="value-row">
-              <span class="value" style="color: ${this._getSeverityColor(state)};">
+              <span class="value" style="color: ${severityColor};">
                 ${isUnavailable ? 'N/A' : state.toFixed(1)}
               </span>
               <div class="bar-container">
-                <div class="bar-background"></div>
+                <div class="bar-background" style="background: ${this._getGradient()};"></div>
                 <div
                   class="bar-fill"
                   style="
                     width: ${isUnavailable ? '0%' : this._getFillPercent(state)}%;
-                    background: ${this._getGradient()};
+                    background-color: ${severityColor};
                   "
                 ></div>
               </div>
@@ -95,28 +115,31 @@ export class SeverityBarCard extends LitElement {
     :host {
       display: block;
     }
-    .card {
-      padding: 12px 16px;
+    ha-card {
+      padding: 10px 12px;
       cursor: pointer;
-      transition: background-color 0.05s;
+      transition: background-color 0.15s ease;
+    }
+    ha-card:hover {
+      background-color: rgba(var(--rgb-primary-text-color), 0.04);
     }
     .content {
       display: flex;
       align-items: flex-start;
-      gap: 12px;
+      gap: 10px;
     }
     .icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: 1px;
     }
     .icon ha-icon {
-      --mdc-icon-size: 20px;
+      --mdc-icon-size: 18px;
     }
     .right {
       flex: 1;
@@ -124,66 +147,48 @@ export class SeverityBarCard extends LitElement {
     }
     .name {
       font-family: Roboto, sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       letter-spacing: 0.1px;
-      line-height: 20px;
-      margin-bottom: 6px;
+      line-height: 18px;
+      margin-bottom: 4px;
     }
     .value-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .value {
       font-family: Roboto, Noto, sans-serif;
       font-size: 12px;
       font-weight: 400;
       letter-spacing: 0.4px;
-      line-height: 16px;
+      line-height: 14px;
       flex-shrink: 0;
-      min-width: 30px;
+      min-width: 28px;
     }
     .bar-container {
       flex: 1;
       position: relative;
-      height: 14px;
-      border-radius: 8px;
+      height: 12px;
+      border-radius: 6px;
       overflow: hidden;
     }
     .bar-background {
       position: absolute;
       inset: 0;
-      background: rgba(128, 128, 128, 0.15);
-      border-radius: 8px;
+      border-radius: 6px;
+      opacity: 0.3;
     }
     .bar-fill {
       position: absolute;
       top: 0;
       left: 0;
       height: 100%;
-      border-radius: 8px;
+      border-radius: 6px;
       transition: width 0.3s ease;
     }
   `;
-
-  private _handleHover(ev: MouseEvent) {
-    const card = (ev.target as HTMLElement).closest('ha-card');
-    if (!card) return;
-    const stateObj = this.hass?.states[this._config?.entity];
-    const state = stateObj ? parseFloat(stateObj.state) : NaN;
-    const color = this._getSeverityColor(state);
-    if (isNaN(state)) {
-      card.style.backgroundColor = 'rgba(200,200,200, 0.02)';
-    } else {
-      card.style.backgroundColor = `${color.replace('rgb', 'rgba').replace(')', ', 0.02)')}`;
-    }
-  }
-
-  private _handleHoverEnd(ev: MouseEvent) {
-    const card = (ev.target as HTMLElement).closest('ha-card');
-    if (card) card.style.backgroundColor = '';
-  }
 
   private _getSeverityColor(value: number): string {
     const severity = this._getMatchingSeverity(value);
@@ -192,14 +197,12 @@ export class SeverityBarCard extends LitElement {
 
   private _getSeverityBgColor(value: number): string {
     const hex = this._getSeverityColor(value);
-    // Convert hex to rgba with 0.2 alpha
     if (hex.startsWith('#')) {
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
       return `rgba(${r}, ${g}, ${b}, 0.2)`;
     }
-    // Already rgb format
     return hex.replace('rgb', 'rgba').replace(')', ', 0.2)');
   }
 
