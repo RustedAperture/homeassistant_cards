@@ -2,6 +2,8 @@
 
 A custom Home Assistant Lovelace card with an icon, entity name, value, and gradient severity progress bar.
 
+![Severity Bar Card Preview](preview.svg)
+
 ## Installation
 
 1. Build the card:
