@@ -86,7 +86,7 @@ export class SeverityBarCard extends LitElement {
     const severityBg = this._getSeverityBgColor(state);
 
     return html`
-      <ha-card class="card">
+      <ha-card class="card" @click="${this._handleClick}">
         <div class="content">
           <div
             class="icon"
@@ -207,6 +207,15 @@ export class SeverityBarCard extends LitElement {
       transition: width 0.3s ease;
     }
   `;
+
+  private _handleClick() {
+    const event = new CustomEvent("hass-more-info", {
+      bubbles: true,
+      composed: true,
+      detail: { entityId: this._config.entity },
+    });
+    this.dispatchEvent(event);
+  }
 
   private _getSeverityColor(value: number): string {
     const severity = this._getMatchingSeverity(value);
