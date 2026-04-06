@@ -196,7 +196,8 @@ export class SeverityBarCard extends LitElement {
       position: absolute;
       inset: 0;
       border-radius: 6px;
-      opacity: 0.3;
+      background-color: rgba(128, 128, 128, 0.15);
+      opacity: 0.35;
     }
     .bar-fill {
       position: absolute;
@@ -244,11 +245,14 @@ export class SeverityBarCard extends LitElement {
     const stops: string[] = [];
 
     for (const s of severity) {
-      const fromPct = ((s.from - min) / range) * 100;
-      const toPct = ((s.to - min) / range) * 100;
-      stops.push(`${s.color} ${fromPct.toFixed(1)}%`);
-      stops.push(`${s.color} ${toPct.toFixed(1)}%`);
+      const pct = ((s.from - min) / range) * 100;
+      stops.push(`${s.color} ${pct.toFixed(1)}%`);
     }
+
+    // Ensure the last color extends to the end of the bar
+    const last = severity[severity.length - 1];
+    const endPct = ((last.to - min) / range) * 100;
+    stops.push(`${last.color} ${endPct.toFixed(1)}%`);
 
     return `linear-gradient(to right, ${stops.join(", ")})`;
   }
