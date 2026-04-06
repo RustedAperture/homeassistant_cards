@@ -281,4 +281,5 @@ export class SeverityBarCard extends LitElement {
   type: "severity-bar-card",
   name: "Severity Bar Card",
   description: "A card with icon, value, and gradient severity progress bar",
+  preview: true,
 });
