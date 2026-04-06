@@ -196,8 +196,7 @@ export class SeverityBarCard extends LitElement {
       position: absolute;
       inset: 0;
       border-radius: 6px;
-      background-color: rgba(128, 128, 128, 0.15);
-      opacity: 0.35;
+      opacity: 0.6;
     }
     .bar-fill {
       position: absolute;
@@ -241,18 +240,29 @@ export class SeverityBarCard extends LitElement {
     const min = this._config.min ?? 0;
     const max = this._config.max ?? 100;
     const range = max - min;
+    const blendZone = 0.02; // 2% blend at boundaries
 
     const stops: string[] = [];
 
-    for (const s of severity) {
-      const pct = ((s.from - min) / range) * 100;
-      stops.push(`${s.color} ${pct.toFixed(1)}%`);
-    }
+    for (let i = 0; i < severity.length; i++) {
+      const s = severity[i];
+      const fromPct = ((s.from - min) / range) * 100;
+      const toPct = ((s.to - min) / range) * 100;
+      const blend = (toPct - fromPct) * blendZone;
 
-    // Ensure the last color extends to the end of the bar
-    const last = severity[severity.length - 1];
-    const endPct = ((last.to - min) / range) * 100;
-    stops.push(`${last.color} ${endPct.toFixed(1)}%`);
+      // Start of this range (solid)
+      stops.push(`${s.color} ${fromPct.toFixed(1)}%`);
+      // End of this range, just before blend starts
+      if (i < severity.length - 1) {
+        stops.push(`${s.color} ${(toPct - blend).toFixed(1)}%`);
+        // Start of next range blend
+        const nextColor = severity[i + 1].color;
+        stops.push(`${nextColor} ${(toPct + blend).toFixed(1)}%`);
+      } else {
+        // Last range extends to the end
+        stops.push(`${s.color} ${toPct.toFixed(1)}%`);
+      }
+    }
 
     return `linear-gradient(to right, ${stops.join(", ")})`;
   }
