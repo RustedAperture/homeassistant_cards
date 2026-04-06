@@ -240,7 +240,6 @@ export class SeverityBarCard extends LitElement {
     const min = this._config.min ?? 0;
     const max = this._config.max ?? 100;
     const range = max - min;
-    const blendZone = 0.02; // 2% blend at boundaries
 
     const stops: string[] = [];
 
@@ -248,15 +247,19 @@ export class SeverityBarCard extends LitElement {
       const s = severity[i];
       const fromPct = ((s.from - min) / range) * 100;
       const toPct = ((s.to - min) / range) * 100;
-      const blend = (toPct - fromPct) * blendZone;
+      const rangeWidth = toPct - fromPct;
 
-      // Start of this range (solid)
+      // Blend is 30% of the range width, minimum 3%, maximum 10%
+      const blend = Math.max(3, Math.min(10, rangeWidth * 0.3));
+
+      // Start of this range
       stops.push(`${s.color} ${fromPct.toFixed(1)}%`);
-      // End of this range, just before blend starts
+
       if (i < severity.length - 1) {
-        stops.push(`${s.color} ${(toPct - blend).toFixed(1)}%`);
-        // Start of next range blend
         const nextColor = severity[i + 1].color;
+        // Solid part ends, blend starts
+        stops.push(`${s.color} ${(toPct - blend).toFixed(1)}%`);
+        // Blend to next color
         stops.push(`${nextColor} ${(toPct + blend).toFixed(1)}%`);
       } else {
         // Last range extends to the end
