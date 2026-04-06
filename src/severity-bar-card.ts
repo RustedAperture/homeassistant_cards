@@ -1,7 +1,7 @@
-import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { LitElement, html, css } from "lit";
+import { customElement } from "lit/decorators.js";
 
-@customElement('severity-bar-card')
+@customElement("severity-bar-card")
 export class SeverityBarCard extends LitElement {
   public hass!: any;
   private _config: any = {};
@@ -15,14 +15,14 @@ export class SeverityBarCard extends LitElement {
 
   static getStubConfig() {
     return {
-      entity: 'sensor.example',
-      name: 'Example',
-      icon: 'mdi:chart-line',
+      entity: "sensor.example",
+      name: "Example",
+      icon: "mdi:chart-line",
       min: 0,
       max: 100,
       severity: [
-        { color: '#2ecc71', from: 0, to: 50 },
-        { color: '#e74c3c', from: 51, to: 100 },
+        { color: "#2ecc71", from: 0, to: 50 },
+        { color: "#e74c3c", from: 51, to: 100 },
       ],
     };
   }
@@ -30,19 +30,19 @@ export class SeverityBarCard extends LitElement {
   static getConfigForm() {
     return {
       schema: [
-        { name: 'entity', required: true, selector: { entity: {} } },
+        { name: "entity", required: true, selector: { entity: {} } },
         {
-          type: 'grid',
-          name: '',
+          type: "grid",
+          name: "",
           schema: [
-            { name: 'name', selector: { text: {} } },
+            { name: "name", selector: { text: {} } },
             {
-              name: 'icon',
+              name: "icon",
               selector: { icon: {} },
-              context: { icon_entity: 'entity' },
+              context: { icon_entity: "entity" },
             },
-            { name: 'min', selector: { number: { mode: 'box' } } },
-            { name: 'max', selector: { number: { mode: 'box' } } },
+            { name: "min", selector: { number: { mode: "box" } } },
+            { name: "max", selector: { number: { mode: "box" } } },
           ],
         },
       ],
@@ -51,13 +51,13 @@ export class SeverityBarCard extends LitElement {
 
   setConfig(config: any) {
     if (!config.entity) {
-      throw new Error('You need to define an entity');
+      throw new Error("You need to define an entity");
     }
     this._config = config;
   }
 
   getCardSize() {
-    return 1;
+    return 2;
   }
 
   getGridOptions() {
@@ -77,29 +77,40 @@ export class SeverityBarCard extends LitElement {
     const state = stateObj ? parseFloat(stateObj.state) : NaN;
     const isUnavailable = isNaN(state);
 
-    const name = this._config.name || stateObj?.attributes?.friendly_name || this._config.entity;
-    const icon = this._config.icon || 'mdi:chart-line';
+    const name =
+      this._config.name ||
+      stateObj?.attributes?.friendly_name ||
+      this._config.entity;
+    const icon = this._config.icon || "mdi:chart-line";
     const severityColor = this._getSeverityColor(state);
     const severityBg = this._getSeverityBgColor(state);
 
     return html`
       <ha-card class="card">
         <div class="content">
-          <div class="icon" style="background-color: ${severityBg}; color: ${severityColor};">
+          <div
+            class="icon"
+            style="background-color: ${severityBg}; color: ${severityColor};"
+          >
             <ha-icon .icon="${icon}"></ha-icon>
           </div>
           <div class="right">
             <div class="name">${name}</div>
             <div class="value-row">
               <span class="value" style="color: ${severityColor};">
-                ${isUnavailable ? 'N/A' : state.toFixed(1)}
+                ${isUnavailable ? "N/A" : state.toFixed(1)}
               </span>
               <div class="bar-container">
-                <div class="bar-background" style="background: ${this._getGradient()};"></div>
+                <div
+                  class="bar-background"
+                  style="background: ${this._getGradient()};"
+                ></div>
                 <div
                   class="bar-fill"
                   style="
-                    width: ${isUnavailable ? '0%' : this._getFillPercent(state)}%;
+                    width: ${isUnavailable
+                    ? "0%"
+                    : this._getFillPercent(state)}%;
                     background-color: ${severityColor};
                   "
                 ></div>
@@ -114,9 +125,14 @@ export class SeverityBarCard extends LitElement {
   static styles = css`
     :host {
       display: block;
+      height: 100%;
     }
     ha-card {
-      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      height: 100%;
+      box-sizing: border-box;
       cursor: pointer;
       transition: background-color 0.15s ease;
     }
@@ -125,8 +141,10 @@ export class SeverityBarCard extends LitElement {
     }
     .content {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 10px;
+      flex: 1;
+      width: 100%;
     }
     .icon {
       display: flex;
@@ -192,18 +210,18 @@ export class SeverityBarCard extends LitElement {
 
   private _getSeverityColor(value: number): string {
     const severity = this._getMatchingSeverity(value);
-    return severity ? severity.color : 'rgb(200, 200, 200)';
+    return severity ? severity.color : "rgb(200, 200, 200)";
   }
 
   private _getSeverityBgColor(value: number): string {
     const hex = this._getSeverityColor(value);
-    if (hex.startsWith('#')) {
+    if (hex.startsWith("#")) {
       const r = parseInt(hex.slice(1, 3), 16);
       const g = parseInt(hex.slice(3, 5), 16);
       const b = parseInt(hex.slice(5, 7), 16);
       return `rgba(${r}, ${g}, ${b}, 0.2)`;
     }
-    return hex.replace('rgb', 'rgba').replace(')', ', 0.2)');
+    return hex.replace("rgb", "rgba").replace(")", ", 0.2)");
   }
 
   private _getFillPercent(value: number): string {
@@ -216,7 +234,7 @@ export class SeverityBarCard extends LitElement {
   private _getGradient(): string {
     const severity = this._config.severity;
     if (!severity || !Array.isArray(severity) || severity.length === 0) {
-      return 'rgba(128, 128, 128, 0.3)';
+      return "rgba(128, 128, 128, 0.3)";
     }
 
     const min = this._config.min ?? 0;
@@ -232,10 +250,12 @@ export class SeverityBarCard extends LitElement {
       stops.push(`${s.color} ${toPct.toFixed(1)}%`);
     }
 
-    return `linear-gradient(to right, ${stops.join(', ')})`;
+    return `linear-gradient(to right, ${stops.join(", ")})`;
   }
 
-  private _getMatchingSeverity(value: number): { color: string; from: number; to: number } | undefined {
+  private _getMatchingSeverity(
+    value: number,
+  ): { color: string; from: number; to: number } | undefined {
     const severity = this._config.severity;
     if (!severity || !Array.isArray(severity)) return undefined;
     return severity.find((s: any) => value >= s.from && value <= s.to);
@@ -244,7 +264,7 @@ export class SeverityBarCard extends LitElement {
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
-  type: 'severity-bar-card',
-  name: 'Severity Bar Card',
-  description: 'A card with icon, value, and gradient severity progress bar',
+  type: "severity-bar-card",
+  name: "Severity Bar Card",
+  description: "A card with icon, value, and gradient severity progress bar",
 });
